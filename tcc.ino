@@ -1,5 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+
 /*
   FRENTE MOTOR DA DIREITA (B2A) = MARROM
   RÉ MOTOR DA DIREITA (B1A) = AZUL
@@ -8,26 +9,31 @@
   RÉ MOTOR DA ESQUERDA (A1A) = BRANCO
 */
 
+// Configuração de rede Wi-Fi
 const char* rede = "GABRIEL";
 const char* senha = "05092005";
 
+// Instancia o objeto Udp
 WiFiUDP Udp;
 
+// Configura os pacotes e a porta do Udp
 unsigned int porta_udp = 12340;
 char pacote_pendente[255];
 char pacote_resposta[] = "Respondendo!!\n";
 
 void setup() {
-  pinMode(13, OUTPUT); // A
-  pinMode(12, OUTPUT); // A
-  pinMode(4, OUTPUT); // B
-  pinMode(5, OUTPUT); // B
+  // Configura os pinos do arduino
+  pinMode(13, OUTPUT);  // A
+  pinMode(12, OUTPUT);  // A
+  pinMode(4, OUTPUT);   // B
+  pinMode(5, OUTPUT);   // B
 
+  // Configura o modo do Wi-Fi
   WiFiMode(WIFI_AP);
 
   Serial.begin(115200);
   delay(10);
- 
+
   // Connect WiFi
   Serial.println();
   Serial.println();
@@ -35,22 +41,25 @@ void setup() {
   Serial.println(rede);
   WiFi.hostname("ARDUINO");
   WiFi.begin(rede, senha);
- 
+
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("WiFi connected");
- 
+
   // Print the IP address
   Serial.print("IP address: ");
   Serial.print(WiFi.localIP());
 
+  // Inicia o servidor Udp
   Udp.begin(porta_udp);
 }
 
 void Parar() {
+  // Desliga os motores da Direita e da Esquerda
+
   // A
   digitalWrite(13, LOW);
   digitalWrite(12, LOW);
@@ -61,6 +70,8 @@ void Parar() {
 }
 
 void Re() {
+  // Liga os 2 motores para a Ré
+
   // A
   digitalWrite(13, LOW);
   digitalWrite(12, HIGH);
@@ -71,6 +82,8 @@ void Re() {
 }
 
 void Frente() {
+  // Liga os 2 motores para a Frente 
+
   // A
   digitalWrite(13, HIGH);
   digitalWrite(12, LOW);
@@ -80,35 +93,84 @@ void Frente() {
   digitalWrite(5, LOW);
 }
 
+void Gira(int lado) {
+  // 0: Direita | 1: Esquerda
+
+  if (lado == 1) {
+    // Desliga o motor da Esquerda (A)
+
+    // A
+    digitalWrite(13, LOW);
+    digitalWrite(12, LOW);
+
+    // Liga o motor da Direita (B) para frente 
+    // B
+    digitalWrite(4, HIGH);
+    digitalWrite(5, LOW);
+  } else {
+  // Desliga o motor da Direita (B)
+
+    // A
+    digitalWrite(13, HIGH);
+    digitalWrite(12, LOW);
+
+    // Liga o motor da Esquerda (A) para frente
+    // B
+    digitalWrite(4, LOW);
+    digitalWrite(5, LOW);
+  }
+}
+
 void loop() {
+  // Recebe o pacote Udp
   int tamanho_pacote = Udp.parsePacket();
 
   if (tamanho_pacote) {
+    // Lê o tamanho do pacote
     int tamanho = Udp.read(pacote_pendente, 255);
 
+    // Verifica se o pacote não está vazio
     if (tamanho > 0) {
       pacote_pendente[tamanho] = 0;
     }
 
     Serial.printf("UDP packet contents: %s\n", pacote_pendente);
 
+    // Pega a mensagem
     String mensagem = String(pacote_pendente);
     Serial.printf("Mensagem: %s\n", mensagem);
 
+    // Verifica se a mensagem recebida é o comando para frente
     if (mensagem.startsWith("frente")) {
       Frente();
       delay(800);
       Parar();
     }
 
+    // Verifica se a mensagem recebida é o comando para ré
     if (mensagem.startsWith("re")) {
       Re();
       delay(800);
       Parar();
     }
-    
+
+    // Verifica se a mensagem recebida é o comando para esquerda
+    if (mensagem.startsWith("esquerda")) {
+      Gira(1);
+      delay(500);
+      Parar();
+    }
+
+    // Verifica se a mensagem recebida é o comando para direita
+    if (mensagem.startsWith("direita")) {
+      Gira(0);
+      delay(500);
+      Parar();
+    }
+
+    // Responde o client e fecha o pacote
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(pacote_resposta);
     Udp.endPacket();
-  } 
+  }
 }
