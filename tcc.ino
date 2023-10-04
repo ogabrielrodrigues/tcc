@@ -75,7 +75,7 @@ void Parar() {
 
   digitalWrite(16, LOW);
   digitalWrite(1, LOW);
-  analogWrite(3, 0);
+  analogWrite(1, 0);
   analogWrite(0, 0);
 }
 
