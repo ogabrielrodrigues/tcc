@@ -10,8 +10,8 @@
 */
 
 // Configuração de rede Wi-Fi
-const char* rede = "GABRIEL";
-const char* senha = "05092005";
+const char* rede = "TCC";
+const char* senha = "05092005*";
 
 // Instancia o objeto Udp
 WiFiUDP Udp;
@@ -23,10 +23,17 @@ char pacote_resposta[] = "Respondendo!!\n";
 
 void setup() {
   // Configura os pinos do arduino
-  pinMode(13, OUTPUT);  // A
-  pinMode(12, OUTPUT);  // A
-  pinMode(4, OUTPUT);   // B
-  pinMode(5, OUTPUT);   // B
+
+  // A
+  pinMode(13, OUTPUT); // Marrom
+  pinMode(12, OUTPUT);  // Vermelho
+  pinMode(4, OUTPUT);   // Amarelo
+  pinMode(5, OUTPUT);   // Verde
+
+  pinMode(16, OUTPUT); // Marrom
+  pinMode(1, OUTPUT); // Roxo
+  pinMode(3, OUTPUT); // Cinza
+  pinMode(0, OUTPUT); // Branco
 
   // Configura o modo do Wi-Fi
   WiFiMode(WIFI_AP);
@@ -34,10 +41,10 @@ void setup() {
   Serial.begin(115200);
   delay(10);
 
-  // Connect WiFi
+  // Conectando ao WiFi
   Serial.println();
   Serial.println();
-  Serial.print("Connecting to ");
+  Serial.print("Conectando à ");
   Serial.println(rede);
   WiFi.hostname("ARDUINO");
   WiFi.begin(rede, senha);
@@ -47,11 +54,12 @@ void setup() {
     Serial.print(".");
   }
   Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println("Wi-Fi conectado");
 
   // Print the IP address
-  Serial.print("IP address: ");
-  Serial.print(WiFi.localIP());
+  Serial.print("Endereço IP: ");
+  Serial.println(WiFi.localIP());
+  Serial.println(WiFi.macAddress());
 
   // Inicia o servidor Udp
   Udp.begin(porta_udp);
@@ -60,25 +68,31 @@ void setup() {
 void Parar() {
   // Desliga os motores da Direita e da Esquerda
 
-  // A
   digitalWrite(13, LOW);
   digitalWrite(12, LOW);
+  analogWrite(4, 0);
+  analogWrite(5, 0);
 
-  // B
-  digitalWrite(4, LOW);
-  digitalWrite(5, LOW);
+  digitalWrite(16, LOW);
+  digitalWrite(1, LOW);
+  analogWrite(1, 0);
+  analogWrite(0, 0);
 }
 
 void Re() {
   // Liga os 2 motores para a Ré
 
   // A
-  digitalWrite(13, LOW);
+  digitalWrite(13, HIGH);
   digitalWrite(12, HIGH);
+  analogWrite(4, 0);
+  analogWrite(5, 255);
 
   // B
-  digitalWrite(4, LOW);
-  digitalWrite(5, HIGH);
+  digitalWrite(16, HIGH);
+  digitalWrite(1, HIGH);
+  analogWrite(3, 0);
+  analogWrite(0, 255);
 }
 
 void Frente() {
@@ -86,11 +100,14 @@ void Frente() {
 
   // A
   digitalWrite(13, HIGH);
-  digitalWrite(12, LOW);
+  digitalWrite(12, HIGH);
+  analogWrite(4, 255);
+  analogWrite(5, 0);
 
-  // B
-  digitalWrite(4, HIGH);
-  digitalWrite(5, LOW);
+  digitalWrite(16, HIGH);
+  digitalWrite(1, HIGH);
+  analogWrite(3, 255);
+  analogWrite(0, 0);
 }
 
 void Gira(int lado) {
@@ -99,25 +116,27 @@ void Gira(int lado) {
   if (lado == 1) {
     // Desliga o motor da Esquerda (A)
 
-    // A
+    digitalWrite(16, LOW);
+    digitalWrite(1, LOW);
+    analogWrite(3, 0);    
+    analogWrite(0, 0);
+    
+    digitalWrite(13, HIGH);
+    digitalWrite(12, HIGH);
+    analogWrite(4, 255);
+    analogWrite(5, 0);
+  } else {
+    // Desliga o motor da Direita (B)
+
     digitalWrite(13, LOW);
     digitalWrite(12, LOW);
-
-    // Liga o motor da Direita (B) para frente 
-    // B
-    digitalWrite(4, HIGH);
-    digitalWrite(5, LOW);
-  } else {
-  // Desliga o motor da Direita (B)
-
-    // A
-    digitalWrite(13, HIGH);
-    digitalWrite(12, LOW);
-
-    // Liga o motor da Esquerda (A) para frente
-    // B
-    digitalWrite(4, LOW);
-    digitalWrite(5, LOW);
+    analogWrite(4, 0);
+    analogWrite(5, 0);
+    
+    digitalWrite(16, HIGH);
+    digitalWrite(1, HIGH);
+    analogWrite(3, 255);
+    analogWrite(0, 0);
   }
 }
 
@@ -134,7 +153,7 @@ void loop() {
       pacote_pendente[tamanho] = 0;
     }
 
-    Serial.printf("UDP packet contents: %s\n", pacote_pendente);
+    Serial.printf("pacote UDP: %s\n", pacote_pendente);
 
     // Pega a mensagem
     String mensagem = String(pacote_pendente);
@@ -143,28 +162,28 @@ void loop() {
     // Verifica se a mensagem recebida é o comando para frente
     if (mensagem.startsWith("frente")) {
       Frente();
-      delay(800);
+      delay(250);
       Parar();
     }
 
     // Verifica se a mensagem recebida é o comando para ré
     if (mensagem.startsWith("re")) {
       Re();
-      delay(800);
+      delay(250);
       Parar();
     }
 
     // Verifica se a mensagem recebida é o comando para esquerda
     if (mensagem.startsWith("esquerda")) {
       Gira(1);
-      delay(500);
+      delay(200);
       Parar();
     }
 
     // Verifica se a mensagem recebida é o comando para direita
     if (mensagem.startsWith("direita")) {
       Gira(0);
-      delay(500);
+      delay(200);
       Parar();
     }
 
