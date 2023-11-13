@@ -2,20 +2,20 @@ const http = require('node:http')
 const url = require('node:url')
 const udp = require('node:dgram')
 
-const udp_client = udp.createSocket('udp4')
+const cliente_udp = udp.createSocket('udp4')
 
-const server = http.createServer((req, res) => {
-    const purl = url.parse(req.url)
+const server = http.createServer((requisicao, resposta) => {
+    const url_tratada = url.parse(requisicao.url)
 
-    if (purl.pathname === "/comando") {
-        const {query} = purl
+    if (url_tratada.pathname === "/comando") {
+        const { consulta } = url_tratada
 
-        const comando = query.split("=")[1]
+        const comando = consulta.split("=")[1]
 
-        udp_client.send(comando, 12340, "192.168.15.3")
+        cliente_udp.send(comando, 12340, "192.168.15.3")
     }
 
-    res.end()
+    resposta.end()
 })
 
 server.listen(8080, "", null, () => console.log("servidor online!"))

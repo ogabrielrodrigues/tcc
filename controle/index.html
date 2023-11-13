@@ -3,24 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Controle</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Controle TCC</title>
 </head>
-<body>
-    <ul id="cmds">
-
-    </ul>
-
-    <div>
-        <div>
-            <div>W</div>
-        </div>
-        <div>
-            <div>A</div>
-            <div>S</div>
-            <div>D</div>
+<body class="h-screen flex items-center justify-center bg-slate-700">
+    <div class="flex flex-col items-center text-5xl font-mono font-bold gap-2">
+        <div id="key-w" class="bg-slate-950 text-zinc-50 py-3 px-5 rounded-lg">W</div>
+        <div class="flex gap-2">
+            <div id="key-a" class="bg-slate-950 text-zinc-50 py-3 px-5 rounded-lg">A</div>
+            <div id="key-s" class="bg-slate-950 text-zinc-50 py-3 px-5 rounded-lg">S</div>
+            <div id="key-d" class="bg-slate-950 text-zinc-50 py-3 px-5 rounded-lg">D</div>
         </div>
     </div>
-
     <script src="./index.js"></script>
 </body>
 </html>
