@@ -1,17 +1,29 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include <RobojaxBTS7960.h>
 
-/*
-  FRENTE MOTOR DA DIREITA (B2A) = MARROM
-  RÉ MOTOR DA DIREITA (B1A) = AZUL
+// Motor da Esquerda
+#define R_EN_ESQUERDA 13
+#define R_PWM_ESQUERDA 4
+#define L_EN_ESQUERDA 12
+#define L_PWM_ESQUERDA 5
 
-  FRENTE MOTOR DA ESQUERDA (A1B) = MARROM
-  RÉ MOTOR DA ESQUERDA (A1A) = BRANCO
-*/
+// Motor da Direita
+#define R_EN_DIREITA 1
+#define R_PWM_DIREITA 0
+#define L_EN_DIREITA 16
+#define L_PWM_DIREITA 3
+
+#define debug 1
+#define CW 1 
+#define CCW 0 
 
 // Configuração de rede Wi-Fi
 const char* rede = "TCC";
 const char* senha = "05092005*";
+
+RobojaxBTS7960 motor_esquerda(R_EN_ESQUERDA, R_PWM_ESQUERDA, 0, L_EN_ESQUERDA, L_PWM_ESQUERDA, 0, debug);
+RobojaxBTS7960 motor_direita(R_EN_DIREITA, R_PWM_DIREITA, 0, L_EN_DIREITA, L_PWM_DIREITA, 0, debug);
 
 // Instancia o objeto Udp
 WiFiUDP Udp;
@@ -21,19 +33,13 @@ unsigned int porta_udp = 12340;
 char pacote_pendente[255];
 char pacote_resposta[] = "Respondendo!!\n";
 
+void Parar() {
+  
+}
+
 void setup() {
-  // Configura os pinos do arduino
-
-  // A
-  pinMode(13, OUTPUT); // Marrom
-  pinMode(12, OUTPUT);  // Vermelho
-  pinMode(4, OUTPUT);   // Amarelo
-  pinMode(5, OUTPUT);   // Verde
-
-  pinMode(16, OUTPUT); // Marrom
-  pinMode(1, OUTPUT); // Roxo
-  pinMode(3, OUTPUT); // Cinza
-  pinMode(0, OUTPUT); // Branco
+  motor_esquerda.begin();
+  motor_direita.begin();
 
   // Configura o modo do Wi-Fi
   WiFiMode(WIFI_AP);
@@ -65,81 +71,6 @@ void setup() {
   Udp.begin(porta_udp);
 }
 
-void Parar() {
-  // Desliga os motores da Direita e da Esquerda
-
-  digitalWrite(13, LOW);
-  digitalWrite(12, LOW);
-  analogWrite(4, 0);
-  analogWrite(5, 0);
-
-  digitalWrite(16, LOW);
-  digitalWrite(1, LOW);
-  analogWrite(1, 0);
-  analogWrite(0, 0);
-}
-
-void Re() {
-  // Liga os 2 motores para a Ré
-
-  // A
-  digitalWrite(13, HIGH);
-  digitalWrite(12, HIGH);
-  analogWrite(4, 0);
-  analogWrite(5, 255);
-
-  // B
-  digitalWrite(16, HIGH);
-  digitalWrite(1, HIGH);
-  analogWrite(3, 0);
-  analogWrite(0, 255);
-}
-
-void Frente() {
-  // Liga os 2 motores para a Frente 
-
-  // A
-  digitalWrite(13, HIGH);
-  digitalWrite(12, HIGH);
-  analogWrite(4, 255);
-  analogWrite(5, 0);
-
-  digitalWrite(16, HIGH);
-  digitalWrite(1, HIGH);
-  analogWrite(3, 255);
-  analogWrite(0, 0);
-}
-
-void Gira(int lado) {
-  // 0: Direita | 1: Esquerda
-
-  if (lado == 1) {
-    // Desliga o motor da Esquerda (A)
-
-    digitalWrite(16, LOW);
-    digitalWrite(1, LOW);
-    analogWrite(3, 0);    
-    analogWrite(0, 0);
-    
-    digitalWrite(13, HIGH);
-    digitalWrite(12, HIGH);
-    analogWrite(4, 255);
-    analogWrite(5, 0);
-  } else {
-    // Desliga o motor da Direita (B)
-
-    digitalWrite(13, LOW);
-    digitalWrite(12, LOW);
-    analogWrite(4, 0);
-    analogWrite(5, 0);
-    
-    digitalWrite(16, HIGH);
-    digitalWrite(1, HIGH);
-    analogWrite(3, 255);
-    analogWrite(0, 0);
-  }
-}
-
 void loop() {
   // Recebe o pacote Udp
   int tamanho_pacote = Udp.parsePacket();
@@ -161,30 +92,50 @@ void loop() {
 
     // Verifica se a mensagem recebida é o comando para frente
     if (mensagem.startsWith("frente")) {
-      Frente();
-      delay(250);
-      Parar();
+      for(int i = 0; i <= 100; i = i*2) { 
+        motor_esquerda.rotate(i, CW);
+        motor_direita.rotate(i, CW);
+        delay(50);
+      }
+
+      motor_esquerda.stop();
+      motor_direita.stop();
     }
 
     // Verifica se a mensagem recebida é o comando para ré
     if (mensagem.startsWith("re")) {
-      Re();
-      delay(250);
-      Parar();
+      for(int i = 0; i <= 100; i = i*2) { 
+        motor_esquerda.rotate(i, CCW);
+        motor_direita.rotate(i, CCW);
+        delay(50);
+      }
+
+      motor_esquerda.stop();
+      motor_direita.stop();
     }
 
     // Verifica se a mensagem recebida é o comando para esquerda
     if (mensagem.startsWith("esquerda")) {
-      Gira(1);
-      delay(200);
-      Parar();
+      motor_direita.stop();
+
+      for(int i = 0; i <= 100; i = i*2) { 
+        motor_esquerda.rotate(i, CW);
+        delay(50);
+      } 
+  
+      motor_esquerda.stop();
     }
 
     // Verifica se a mensagem recebida é o comando para direita
     if (mensagem.startsWith("direita")) {
-      Gira(0);
-      delay(200);
-      Parar();
+      motor_esquerda.stop();
+
+      for(int i = 0; i <= 100; i = i*2) { 
+        motor_direita.rotate(i, CW);
+        delay(50);
+      } 
+  
+      motor_direita.stop();
     }
 
     // Responde o client e fecha o pacote
