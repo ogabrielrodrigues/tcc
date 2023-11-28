@@ -75,11 +75,11 @@ void Parar() {
 
   digitalWrite(16, LOW);
   digitalWrite(1, LOW);
-  analogWrite(1, 0);
+  analogWrite(3, 0);
   analogWrite(0, 0);
 }
 
-void Re() {
+void Frente() {
   // Liga os 2 motores para a Ré
 
   // A
@@ -95,7 +95,7 @@ void Re() {
   analogWrite(0, 255);
 }
 
-void Frente() {
+void Re() {
   // Liga os 2 motores para a Frente 
 
   // A
@@ -113,7 +113,7 @@ void Frente() {
 void Gira(int lado) {
   // 0: Direita | 1: Esquerda
 
-  if (lado == 1) {
+  if (lado == 0) {
     // Desliga o motor da Esquerda (A)
 
     digitalWrite(16, LOW);
