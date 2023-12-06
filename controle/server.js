@@ -8,14 +8,11 @@ const server = http.createServer((requisicao, resposta) => {
     const url_tratada = url.parse(requisicao.url)
 
     if (url_tratada.pathname === "/comando") {
-        const { consulta } = url_tratada
-
-        const comando = consulta.split("=")[1]
+        const comando = url_tratada.query.split("=")[1]
 
         cliente_udp.send(comando, 12340, "192.168.15.3")
+        resposta.end()
     }
-
-    resposta.end()
 })
 
 server.listen(8080, "", null, () => console.log("servidor online!"))

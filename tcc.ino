@@ -33,10 +33,6 @@ unsigned int porta_udp = 12340;
 char pacote_pendente[255];
 char pacote_resposta[] = "Respondendo!!\n";
 
-void Parar() {
-  
-}
-
 void setup() {
   motor_esquerda.begin();
   motor_direita.begin();
@@ -48,10 +44,7 @@ void setup() {
   delay(10);
 
   // Conectando ao WiFi
-  Serial.println();
-  Serial.println();
-  Serial.print("Conectando à ");
-  Serial.println(rede);
+  Serial.printf("Conectando à %s\n", rede);
   WiFi.hostname("ARDUINO");
   WiFi.begin(rede, senha);
 
@@ -90,9 +83,10 @@ void loop() {
     String mensagem = String(pacote_pendente);
     Serial.printf("Mensagem: %s\n", mensagem);
 
+
     // Verifica se a mensagem recebida é o comando para frente
     if (mensagem.startsWith("frente")) {
-      for(int i = 0; i <= 100; i = i*2) { 
+      for(int i = 0; i <= 100; i++) { 
         motor_esquerda.rotate(i, CW);
         motor_direita.rotate(i, CW);
         delay(50);
@@ -104,7 +98,7 @@ void loop() {
 
     // Verifica se a mensagem recebida é o comando para ré
     if (mensagem.startsWith("re")) {
-      for(int i = 0; i <= 100; i = i*2) { 
+      for(int i = 0; i <= 100; i++) { 
         motor_esquerda.rotate(i, CCW);
         motor_direita.rotate(i, CCW);
         delay(50);
@@ -118,7 +112,7 @@ void loop() {
     if (mensagem.startsWith("esquerda")) {
       motor_direita.stop();
 
-      for(int i = 0; i <= 100; i = i*2) { 
+      for(int i = 0; i <= 100; i++) { 
         motor_esquerda.rotate(i, CW);
         delay(50);
       } 
@@ -130,10 +124,7 @@ void loop() {
     if (mensagem.startsWith("direita")) {
       motor_esquerda.stop();
 
-      for(int i = 0; i <= 100; i = i*2) { 
-        motor_direita.rotate(i, CW);
-        delay(50);
-      } 
+      motor_direita.rotate(40, CW);
   
       motor_direita.stop();
     }
