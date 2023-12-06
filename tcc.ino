@@ -1,14 +1,6 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 
-/*
-  FRENTE MOTOR DA DIREITA (B2A) = MARROM
-  RÉ MOTOR DA DIREITA (B1A) = AZUL
-
-  FRENTE MOTOR DA ESQUERDA (A1B) = MARROM
-  RÉ MOTOR DA ESQUERDA (A1A) = BRANCO
-*/
-
 // Configuração de rede Wi-Fi
 const char* rede = "TCC";
 const char* senha = "05092005*";
@@ -39,11 +31,8 @@ void setup() {
   WiFiMode(WIFI_AP);
 
   Serial.begin(115200);
-  delay(10);
 
   // Conectando ao WiFi
-  Serial.println();
-  Serial.println();
   Serial.print("Conectando à ");
   Serial.println(rede);
   WiFi.hostname("ARDUINO");
@@ -86,13 +75,13 @@ void Frente() {
   digitalWrite(13, HIGH);
   digitalWrite(12, HIGH);
   analogWrite(4, 0);
-  analogWrite(5, 255);
+  analogWrite(5, 40);
 
   // B
   digitalWrite(16, HIGH);
   digitalWrite(1, HIGH);
   analogWrite(3, 0);
-  analogWrite(0, 255);
+  analogWrite(0, 40);
 }
 
 void Re() {
@@ -101,12 +90,12 @@ void Re() {
   // A
   digitalWrite(13, HIGH);
   digitalWrite(12, HIGH);
-  analogWrite(4, 255);
+  analogWrite(4, 40);
   analogWrite(5, 0);
 
   digitalWrite(16, HIGH);
   digitalWrite(1, HIGH);
-  analogWrite(3, 255);
+  analogWrite(3, 40);
   analogWrite(0, 0);
 }
 
@@ -123,7 +112,7 @@ void Gira(int lado) {
     
     digitalWrite(13, HIGH);
     digitalWrite(12, HIGH);
-    analogWrite(4, 255);
+    analogWrite(4, 40);
     analogWrite(5, 0);
   } else {
     // Desliga o motor da Direita (B)
@@ -135,7 +124,7 @@ void Gira(int lado) {
     
     digitalWrite(16, HIGH);
     digitalWrite(1, HIGH);
-    analogWrite(3, 255);
+    analogWrite(3, 40);
     analogWrite(0, 0);
   }
 }
